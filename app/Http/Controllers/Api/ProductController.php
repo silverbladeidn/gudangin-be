@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Category;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ProductController extends Controller
 {
@@ -27,16 +26,17 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $products,
-                'message' => 'Products retrieved successfully'
+                'message' => 'Products retrieved successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve products',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
     public function store(Request $request)
     {
         try {
@@ -51,7 +51,7 @@ class ProductController extends Controller
                     'size' => $file->getSize(),
                     'mime' => $file->getMimeType(),
                     'extension' => $file->getClientOriginalExtension(),
-                    'isValid' => $file->isValid()
+                    'isValid' => $file->isValid(),
                 ]);
             } else {
                 Log::warning('No file found in request');
@@ -68,14 +68,14 @@ class ProductController extends Controller
                 'min_stock_level' => 'nullable|integer|min:0',
                 'max_stock_level' => 'nullable|integer|min:0',
                 'description' => 'nullable|string',
-                'images' => 'nullable|image|max:10240' // ← PLURAL (sesuai database)
+                'images' => 'nullable|image|max:10240', // ← PLURAL (sesuai database)
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -86,7 +86,7 @@ class ProductController extends Controller
 
             // Pastikan slug unik
             while (Product::where('slug', $slug)->exists()) {
-                $slug = $originalSlug . '-' . $counter;
+                $slug = $originalSlug.'-'.$counter;
                 $counter++;
             }
 
@@ -94,7 +94,7 @@ class ProductController extends Controller
             $imagePath = null;
             if ($request->hasFile('images')) { // ← PLURAL
                 $image = $request->file('images'); // ← PLURAL
-                $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('products', $imageName, 'public');
             }
 
@@ -118,7 +118,7 @@ class ProductController extends Controller
                 'status' => $status,
                 'category_id' => $request->category_id,
                 'images' => $imagePath, // ← PLURAL (sesuai database)
-                'is_active' => true
+                'is_active' => true,
             ]);
 
             // Load relasi + accessor image_url
@@ -127,7 +127,7 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $product,
-                'message' => 'Product created successfully'
+                'message' => 'Product created successfully',
             ], 201);
         } catch (\Exception $e) {
             // Hapus gambar jika ada error
@@ -138,10 +138,11 @@ class ProductController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create product',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
     public function show($id)
     {
         try {
@@ -150,13 +151,13 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $product,
-                'message' => 'Product retrieved successfully'
+                'message' => 'Product retrieved successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Product not found',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 404);
         }
     }
@@ -177,7 +178,7 @@ class ProductController extends Controller
                 'max_stock_level' => 'nullable|integer|min:0',
                 'description' => 'nullable|string',
                 'images' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240',
-                'remove_image' => 'nullable|boolean' // Tambahkan field untuk hapus gambar
+                'remove_image' => 'nullable|boolean', // Tambahkan field untuk hapus gambar
             ]);
 
             // Validasi cost_price tidak boleh lebih besar dari price
@@ -197,7 +198,7 @@ class ProductController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -209,7 +210,7 @@ class ProductController extends Controller
                 $counter = 1;
 
                 while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
-                    $slug = $originalSlug . '-' . $counter;
+                    $slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
             }
@@ -233,7 +234,7 @@ class ProductController extends Controller
                 }
 
                 $image = $request->file('images');
-                $imageName = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $imageName = time().'_'.Str::random(10).'.'.$image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('products', $imageName, 'public');
             }
 
@@ -256,13 +257,13 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $product,
-                'message' => 'Product updated successfully'
+                'message' => 'Product updated successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update product',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -281,13 +282,45 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Product deleted successfully'
+                'message' => 'Product deleted successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete product',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function generateBarcodeImage($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+            if (empty($product->sku)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Produk tidak ada SKU untuk dijadikan barcode',
+                ], 400);
+            }
+
+            $generator = new BarcodeGeneratorPNG;
+            $barcodePng = $generator->getBarcode($product->sku, $generator::TYPE_CODE_128);
+
+            return response($barcodePng, 200)
+                ->header('Content-Type', 'image/png')
+                ->header('Cache-Control', 'public, max-age=86400');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Produk tidak ditemukan',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate barcode',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -303,14 +336,14 @@ class ProductController extends Controller
                 'type' => 'required|in:in,out,adjustment', // Sesuaikan dengan nilai yang dikirim frontend
                 'quantity' => 'required|integer|min:1',
                 'reason' => 'required|string|max:255',
-                'notes' => 'nullable|string'
+                'notes' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -325,7 +358,7 @@ class ProductController extends Controller
                         return response()->json([
                             'success' => false,
                             'message' => 'Insufficient stock',
-                            'errors' => ['quantity' => ['Jumlah pengurangan melebihi stok yang tersedia']]
+                            'errors' => ['quantity' => ['Jumlah pengurangan melebihi stok yang tersedia']],
                         ], 422);
                     }
                     $newStock -= $request->quantity;
@@ -337,7 +370,7 @@ class ProductController extends Controller
 
             // Update stok produk
             $product->update([
-                'stock_quantity' => $newStock
+                'stock_quantity' => $newStock,
             ]);
 
             // Update status stok otomatis
@@ -354,7 +387,7 @@ class ProductController extends Controller
                 'previous_stock' => $product->stock_quantity,
                 'current_stock' => $newStock,
                 'reason' => $request->reason,
-                'notes' => $request->notes
+                'notes' => $request->notes,
             ]);
 
             // Reload product dengan data terbaru
@@ -363,13 +396,13 @@ class ProductController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $product,
-                'message' => 'Stock updated successfully'
+                'message' => 'Stock updated successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update stock',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

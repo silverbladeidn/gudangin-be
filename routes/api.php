@@ -1,20 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\EmailSettingsController;
+use App\Http\Controllers\Api\ItemRequestController;
+use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StockMovementController;
-use App\Http\Controllers\Api\ItemRequestController;
 use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\PermissionController;
-use App\Http\Controllers\Api\EmailSettingsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Models\Role;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 // === Auth ===
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout']);
+
+Route::get('/products/{id}/barcode', [ProductController::class, 'generateBarcodeImage']);
+
 // === Protected routes ===
 Route::middleware('auth:sanctum')->group(function () {
     // Categories
@@ -35,7 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('roles/{role}/permissions', function (Role $role) {
         return response()->json([
-            'data' => $role->permissions()->get()
+            'data' => $role->permissions()->get(),
         ]);
     });
 
@@ -86,8 +89,8 @@ Route::middleware('auth:sanctum')->group(function () {
                 'in_stock' => $inStock,
                 'low_stock' => $lowStock,
                 'out_of_stock' => $outOfStock,
-                'total_inventory_value' => $totalValue
-            ]
+                'total_inventory_value' => $totalValue,
+            ],
         ]);
     });
 });
