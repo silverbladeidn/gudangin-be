@@ -25,12 +25,14 @@ return [
         'http://localhost:5173', // Vite default
         'http://127.0.0.1:5173',
         'https://gudangin-admin-fe.vercel.app',
+        'https://goodang-id.vercel.app',
         // Tambahkan domain frontend Anda di sini
         // 'https://yourdomain.com',
     ],
 
     'allowed_origins_patterns' => [
         '#^https://gudangin-admin-fe.*\.vercel\.app$#',
+        '#^https://goodang-id.*\.vercel\.app$#',
     ],
 
     'allowed_headers' => ['*'],
