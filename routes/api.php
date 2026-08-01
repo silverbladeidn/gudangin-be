@@ -29,7 +29,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Stock Movement
     Route::get('stockmovement', [StockMovementController::class, 'index']);
-
+    Route::get('stockmovement/export/pdf', [StockMovementController::class, 'generatePdf']);
+    Route::get('stockmovement/export/excel', [StockMovementController::class, 'generateExcel']);
+    // Permissions
     Route::get('permissions', [PermissionController::class, 'index']);
 
     Route::get('roles', function () {

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exports\StockMovementExport;
 use App\Http\Controllers\Controller;
 use App\Models\StockMovement;
-use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockMovementController extends Controller
 {
@@ -47,7 +48,7 @@ class StockMovementController extends Controller
             'current_stock',
             'reference',
             'created_at',
-            'updated_at'
+            'updated_at',
         ];
         $sortBy = $request->get('sort_by', 'created_at');
         $sortBy = in_array($sortBy, $allowedSortFields) ? $sortBy : 'created_at';
@@ -71,7 +72,25 @@ class StockMovementController extends Controller
                 'last_page' => $stockMovements->lastPage(),
                 'per_page' => $stockMovements->perPage(),
                 'total' => $stockMovements->total(),
-            ]
+            ],
         ]);
+    }
+
+    public function generatePdf()
+    {
+        $stockMove = StockMovement::with('product')
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('exports.stock-movement', [
+            'stockMove' => $stockMove,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream('stock-movement-'.now()->format('Y-m-d').'.pdf');
+    }
+
+    public function generateExcel()
+    {
+        return Excel::download(new StockMovementExport, 'stock-movement-'.now()->format('Y-m-d').'.xlsx');
     }
 }
