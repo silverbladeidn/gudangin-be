@@ -86,7 +86,7 @@ class StockMovementController extends Controller
             'stockMove' => $stockMove,
         ])->setPaper('a4', 'landscape');
 
-        return $pdf->stream('stock-movement-'.now()->format('Y-m-d').'.pdf');
+        return $pdf->download('stock-movement-'.now()->format('Y-m-d').'.pdf');
     }
 
     public function generateExcel()
