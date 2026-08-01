@@ -26,6 +26,7 @@ return [
         'http://127.0.0.1:5173',
         'https://gudangin-admin-fe.vercel.app',
         'https://goodang-id.vercel.app',
+        'https://admin.goodong.id',
         // Tambahkan domain frontend Anda di sini
         // 'https://yourdomain.com',
     ],
